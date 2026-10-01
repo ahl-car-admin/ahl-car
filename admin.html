@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم أهل كار | إدارة الطلبات</title>
+    <title>إدارة طلبات معرض أهل كار</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- مكتبة Firebase لإدارة قاعدة البيانات -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -19,63 +18,223 @@
         body {
             background-color: #0b0f19;
             color: #f3f4f6;
-            padding: 30px;
+            padding: 20px;
             min-height: 100vh;
         }
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
+        }
+        /* شاشة تسجيل الدخول */
+        #loginScreen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+        .login-box {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+        }
+        .login-box h2 {
+            color: #d4af37;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .login-box button {
+            background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+            color: #0b0f19;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        /* لوحة التحكم الرئيسية */
+        #adminPanel {
+            display: none;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(17, 24, 39, 0.85);
-            padding: 20px 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            margin-bottom: 30px;
+            padding: 20px 25px;
+            border-radius: 14px;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            margin-bottom: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         .header h1 {
             color: #d4af37;
-            font-size: 24px;
+            font-size: 22px;
         }
-        .stats {
-            color: #9ca3af;
-            font-size: 14px;
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
         }
-        .orders-grid {
-            display: grid;
-            gap: 20px;
+        .btn-logout:hover {
+            background: #ef4444;
+            color: #fff;
         }
-        .order-card {
+        /* قسم الإحصائيات والأزرار العليا */
+        .stats-panel {
             background: rgba(17, 24, 39, 0.9);
             border: 1px solid #374151;
-            border-radius: 12px;
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: border-color 0.3s;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        .order-card:hover {
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .stat-btn {
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .stat-btn.active, .stat-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
             border-color: #d4af37;
-        }
-        .order-info h3 {
             color: #d4af37;
-            margin-bottom: 5px;
-            font-size: 18px;
+        }
+        /* شريط البحث */
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        .search-box:focus {
+            border-color: #d4af37;
+            outline: none;
+        }
+        /* فلتر الأقسام */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .filter-btn {
+            background: #1f2937;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+        .filter-btn.active {
+            background: #d4af37;
+            border-color: #d4af37;
+            color: #0b0f19;
+            font-weight: 700;
+        }
+        /* كروت الطلبات */
+        .orders-grid {
+            display: grid;
+            gap: 15px;
+        }
+        .order-card {
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .badge-new {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .order-info {
+            margin-bottom: 15px;
         }
         .order-info p {
-            color: #d4af37;
             font-size: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            color: #9ca3af;
+            display: flex;
+            justify-content: space-between;
         }
         .order-info p span {
-            color: #e5e7eb;
+            color: #f3f4f6;
+            font-weight: 600;
         }
+        /* أزرار الإجراءات داخل الكارت */
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-align: center;
+            font-family: 'Cairo', sans-serif;
+            text-decoration: none;
+        }
+        .btn-whatsapp { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: #10b981; }
+        .btn-forward { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: #3b82f6; }
+        .btn-save { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: #f59e0b; }
+        .btn-contacted { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border-color: #8b5cf6; }
+        .btn-archive { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border-color: #0ea5e9; }
+        .btn-del { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: #ef4444; }
+        
         .no-orders {
             text-align: center;
             color: #9ca3af;
@@ -83,39 +242,77 @@
             padding: 40px;
             border-radius: 12px;
             border: 1px dashed #374151;
-            font-size: 16px;
-        }
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-delete:hover {
-            background: #ef4444;
-            color: #fff;
+            font-size: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h2>إدارة طلبات معرض أهل كار</h2>
+            <input type="password" id="passInput" placeholder="أدخل كلمة المرور (1111)">
+            <button onclick="checkPassword()">دخول</button>
+        </div>
+    </div>
+
+    <!-- لوحة التحكم -->
+    <div id="adminPanel" class="container">
         <div class="header">
-            <h1>لوحة تحكم طلبات أهل كار</h1>
-            <div class="stats" id="orderCount">جاري تحميل الطلبات...</div>
+            <h1>إدارة طلبات معرض أهل كار</h1>
+            <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stats-grid">
+                <div class="stat-btn active" id="statAll" onclick="setFilter('all')">الكل: <span id="countAll">0</span></div>
+                <div class="stat-btn" id="statNew" onclick="setFilter('New')">الجديدة: <span id="countNew">0</span></div>
+                <div class="stat-btn" id="statContacted" onclick="setFilter('تم التواصل')">تم التواصل: <span id="countContacted">0</span></div>
+                <div class="stat-btn" id="statSaved" onclick="setFilter('المحفوظات')">المحفوظات: <span id="countSaved">0</span></div>
+                <div class="stat-btn" id="statArchive" onclick="setFilter('الأرشيف')">الأرشيف: <span id="countArchive">0</span></div>
+            </div>
+
+            <input type="text" id="searchInput" class="search-box" placeholder="بحث سريع برقم الطلب، الاسم، الجوال، السيارة..." oninput="filterOrders()">
+
+            <div class="filter-grid">
+                <button class="filter-btn active" id="fAll" onclick="setFilter('all')">جميع الطلبات</button>
+                <button class="filter-btn" id="fNew" onclick="setFilter('New')">الطلبات الجديدة</button>
+                <button class="filter-btn" id="fContacted" onclick="setFilter('تم التواصل')">تم التواصل</button>
+                <button class="filter-btn" id="fSaved" onclick="setFilter('المحفوظات')">المحفوظات</button>
+                <button class="filter-btn" id="fArchive" onclick="setFilter('الأرشيف')">الأرشيف</button>
+            </div>
         </div>
 
         <div id="ordersContainer" class="orders-grid">
-            <!-- سيتم تحميل الطلبات هنا تلقائياً -->
+            <!-- تحميل الطلبات هنا -->
         </div>
     </div>
 
     <script>
-        // إعدادات ربط Firebase الدائمة لمشروع ahl-car
+        // التحقق من الباسورد
+        function checkPassword() {
+            const pass = document.getElementById('passInput').value;
+            if(pass === '1111') {
+                localStorage.setItem('ahl_auth', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert('كلمة المرور غير صحيحة!');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('ahl_auth');
+            location.reload();
+        }
+
+        if(localStorage.getItem('ahl_auth') === 'true') {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        // إعدادات Firebase الدائمة
         const firebaseConfig = {
             apiKey: "AIzaSyCe4nQE1-wtPPsr7AaC4bSRuSij8_bG6yQ",
             authDomain: "ahl-car.firebaseapp.com",
@@ -132,55 +329,150 @@
         }
         const database = firebase.database();
 
-        const ordersContainer = document.getElementById('ordersContainer');
-        const orderCountElement = document.getElementById('orderCount');
+        let allOrdersData = {};
+        let currentFilter = 'all';
 
-        // استماع للتحديثات المباشرة من قاعدة البيانات
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            
+            // تحديث الأزرار النشطة
+            document.querySelectorAll('.stat-btn, .filter-btn').forEach(btn => btn.classList.remove('active'));
+            if(filterType === 'all') {
+                document.getElementById('statAll').classList.add('active');
+                document.getElementById('fAll').classList.add('active');
+            } else if(filterType === 'New') {
+                document.getElementById('statNew').classList.add('active');
+                document.getElementById('fNew').classList.add('active');
+            } else if(filterType === 'تم التواصل') {
+                document.getElementById('statContacted').classList.add('active');
+                document.getElementById('fContacted').classList.add('active');
+            } else if(filterType === 'المحفوظات') {
+                document.getElementById('statSaved').classList.add('active');
+                document.getElementById('fSaved').classList.add('active');
+            } else if(filterType === 'الأرشيف') {
+                document.getElementById('statArchive').classList.add('active');
+                document.getElementById('fArchive').classList.add('active');
+            }
+            renderOrders();
+        }
+
+        // استماع للتحديثات
         database.ref('orders').on('value', (snapshot) => {
-            ordersContainer.innerHTML = '';
-            const data = snapshot.val();
+            allOrdersData = snapshot.val() || {};
+            updateCounts();
+            renderOrders();
+        });
 
-            if (!data) {
-                ordersContainer.innerHTML = '<div class="no-orders">لا توجد طلبات جديدة حتى الآن.</div>';
-                orderCountElement.innerText = 'إجمالي الطلبات: 0';
+        function updateCounts() {
+            const keys = Object.keys(allOrdersData);
+            let counts = { all: keys.length, New: 0, 'تم التواصل': 0, 'المحفوظات': 0, 'الأرشيف': 0 };
+
+            keys.forEach(k => {
+                let st = allOrdersData[k].status || 'New';
+                if(counts[st] !== undefined) counts[st]++;
+            });
+
+            document.getElementById('countAll').innerText = counts.all;
+            document.getElementById('countNew').innerText = counts.New;
+            document.getElementById('countContacted').innerText = counts['تم التواصل'];
+            document.getElementById('countSaved').innerText = counts['المحفوظات'];
+            document.getElementById('countArchive').innerText = counts['الأرشيف'];
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = '';
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+            const keys = Object.keys(allOrdersData).reverse(); // أحدث الطلبات أولاً
+
+            if (keys.length === 0) {
+                container.innerHTML = '<div class="no-orders">لا توجد طلبات حتى الآن.</div>';
                 return;
             }
 
-            const ordersKeys = Object.keys(data);
-            orderCountElement.innerText = `إجمالي الطلبات: ${ordersKeys.length}`;
+            let filteredKeys = keys.filter(key => {
+                const order = allOrdersData[key];
+                const status = order.status || 'New';
 
-            ordersKeys.forEach((key) => {
-                const order = data[key];
-                
+                // فلتر الأقسام
+                if(currentFilter !== 'all' && status !== currentFilter) return false;
+
+                // فلتر البحث السريع
+                if(searchText) {
+                    const matchText = `${order.orderId || key} ${order.name} ${order.phone} ${order.car} ${order.city}`.toLowerCase();
+                    if(!matchText.includes(searchText)) return false;
+                }
+                return true;
+            });
+
+            if (filteredKeys.length === 0) {
+                container.innerHTML = '<div class="no-orders">لا توجد طلبات تطابق بحثك.</div>';
+                return;
+            }
+
+            filteredKeys.forEach((key) => {
+                const order = allOrdersData[key];
+                const status = order.status || 'New';
+
                 const card = document.createElement('div');
                 card.className = 'order-card';
                 card.innerHTML = `
+                    <div class="badge-new">${status}</div>
                     <div class="order-info">
-                        <h3>رقم الطلب: ${order.orderId || key}</h3>
-                        <p>اسم العميل: <span>${order.name}</span></p>
-                        <p>رقم الجوال: <span dir="ltr">${order.phone}</span></p>
-                        <p>السيارة المطلوبة: <span>${order.car}</span></p>
-                        <p>ملاحظات: <span>${order.notes || 'لا توجد ملاحظات'}</span></p>
-                        <p style="color:#9ca3af; font-size:12px; margin-top:8px;">وقت الطلب: ${order.date || 'غير محدد'}</p>
+                        <p><span>رقم الطلب:</span> <span>${order.orderId || key}</span></p>
+                        <p><span>التاريخ والوقت:</span> <span>${order.date || 'غير محدد'}</span></p>
+                        <p><span>نوع العميل:</span> <span>${order.clientType || 'أفراد'}</span></p>
+                        <p><span>طريقة الدفع:</span> <span>${order.payType || 'كاش'}</span></p>
+                        <p><span>الاسم:</span> <span>${order.name}</span></p>
+                        <p><span>الجوال:</span> <span dir="ltr">${order.phone}</span></p>
+                        <p><span>المدينة:</span> <span>${order.city || 'غير محددة'}</span></p>
+                        <p><span>السيارة:</span> <span>${order.car}</span></p>
                     </div>
-                    <div>
-                        <button class="btn-delete" onclick="deleteOrder('${key}')">حذف الطلب</button>
+                    <div class="card-actions">
+                        <a href="https://wa.me/${order.phone}" target="_blank" class="action-btn btn-whatsapp">واتساب العميل</a>
+                        <a href="https://wa.me/?text=${encodeURIComponent('تفاصيل طلب معرض أهل كار:\nرقم الطلب: ' + (order.orderId || key) + '\nالاسم: ' + order.name + '\nالجوال: ' + order.phone + '\nالمدينة: ' + (order.city || '') + '\nالسيارة: ' + order.car + '\nطريقة الدفع: ' + (order.payType || ''))}" target="_blank" class="action-btn btn-forward">تحويل لشخص آخر</a>
+                        <button class="action-btn btn-save" onclick="saveAsTxt('${key}')">حفظ باللوحة .txt</button>
+                        <button class="action-btn btn-contacted" onclick="updateStatus('${key}', 'تم التواصل')">تم التواصل</button>
+                        <button class="action-btn btn-archive" onclick="updateStatus('${key}', 'الأرشيف')">أرشفة</button>
+                        <button class="action-btn btn-del" onclick="deleteOrder('${key}')">حذف</button>
                     </div>
                 `;
-                ordersContainer.appendChild(card);
+                container.appendChild(card);
             });
-        });
+        }
 
-        // دالة حذف طلب من قاعدة البيانات
-        function deleteOrder(orderKey) {
+        function filterOrders() {
+            renderOrders();
+        }
+
+        // تحديث حالة الطلب (تم التواصل، أرشيف، محفوظات)
+        function updateStatus(key, newStatus) {
+            database.ref('orders/' + key).update({ status: newStatus })
+                .then(() => {
+                    // التحديث تلقائي
+                });
+        }
+
+        // حفظ الطلب كملف نصي وتحويل حالته إلى المحفوظات
+        function saveAsTxt(key) {
+            const order = allOrdersData[key];
+            const content = `--- تفاصيل طلب معرض أهل كار ---\nرقم الطلب: ${order.orderId || key}\nالتاريخ: ${order.date}\nنوع العميل: ${order.clientType}\nطريقة الدفع: ${order.payType}\nاسم العميل: ${order.name}\nالجوال: ${order.phone}\nالمدينة: ${order.city}\nالسيارة المطلوبة: ${order.car}`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Order_${order.orderId || key}.txt`;
+            link.click();
+
+            // حفظ الحالة تلقائياً إلى المحفوظات
+            updateStatus(key, 'المحفوظات');
+        }
+
+        // حذف الطلب
+        function deleteOrder(key) {
             if (confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
-                database.ref('orders/' + orderKey).remove()
-                    .then(() => {
-                        // يتم التحديث تلقائياً عبر مراقب قاعدة البيانات
-                    })
-                    .catch((error) => {
-                        alert("حدث خطأ أثناء الحذف.");
-                    });
+                database.ref('orders/' + key).remove();
             }
         }
     </script>

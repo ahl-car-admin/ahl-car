@@ -25,54 +25,6 @@
             max-width: 900px;
             margin: 0 auto;
         }
-        /* شاشة تسجيل الدخول */
-        #loginScreen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 80vh;
-        }
-        .login-box {
-            background: rgba(17, 24, 39, 0.95);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 16px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-        }
-        .login-box h2 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 12px 15px;
-            background: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .login-box button {
-            background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
-            color: #0b0f19;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        /* لوحة التحكم الرئيسية */
-        #adminPanel {
-            display: none;
-        }
         .header {
             display: flex;
             justify-content: space-between;
@@ -87,20 +39,6 @@
         .header h1 {
             color: #d4af37;
             font-size: 22px;
-        }
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-        }
-        .btn-logout:hover {
-            background: #ef4444;
-            color: #fff;
         }
         /* قسم الإحصائيات والأزرار العليا */
         .stats-panel {
@@ -248,20 +186,10 @@
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginScreen">
-        <div class="login-box">
-            <h2>إدارة طلبات معرض أهل كار</h2>
-            <input type="password" id="passInput" placeholder="أدخل كلمة المرور (1111)">
-            <button onclick="checkPassword()">دخول</button>
-        </div>
-    </div>
-
     <!-- لوحة التحكم -->
-    <div id="adminPanel" class="container">
+    <div class="container">
         <div class="header">
             <h1>إدارة طلبات معرض أهل كار</h1>
-            <button class="btn-logout" onclick="logout()">تسجيل الخروج</button>
         </div>
 
         <div class="stats-panel">
@@ -290,50 +218,18 @@
     </div>
 
     <script>
-        // التحقق من الباسورد
-        function checkPassword() {
-            const pass = document.getElementById('passInput').value;
-            if(pass === '1111') {
-                localStorage.setItem('ahl_auth', 'true');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                alert('كلمة المرور غير صحيحة!');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('ahl_auth');
-            location.reload();
-        }
-
-        if(localStorage.getItem('ahl_auth') === 'true') {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-        }
-
-        // دالة تنظيف وتنسيق رقم الواتساب لأي دولة (تزيل الرموز والمسافات وتضبط المفتاح الدولي)
+        // دالة تنظيف وتنسيق رقم الواتساب لأي دولة
         function cleanWhatsAppNumber(phone) {
             if (!phone) return '';
-            // الاحتفاظ بالأرقام فقط
             let cleaned = phone.replace(/\D/g, '');
-            
-            // إذا كان الرقم يبدأ بـ 0 (مثل 05 في السعودية أو 01 في مصر)، نتخلص من الصفر المحلي الأول إذا لزم أو نتركه حسب النظام، 
-            // لكن الروابط الدولية تعمل بكفاءة عند إزالة الصفر المحلي إذا أضيف مفتاح الدولة، 
-            // ولضمان عمله مع أرقام السعودية (يبدأ بـ 5) أو مصر (يبدأ بـ 1) مباشرة:
             if (cleaned.startsWith('0')) {
                 cleaned = cleaned.substring(1);
             }
-            
-            // إذا كان رقم سعودي يبدأ بـ 5 وطوله 9 أرقام، نضيف مفتاح الدولة 966 تلقائياً
             if (cleaned.length === 9 && cleaned.startsWith('5')) {
                 cleaned = '966' + cleaned;
-            }
-            // إذا كان رقم مصري يبدأ بـ 1 وطوله 10 أرقام، نضيف مفتاح الدولة 20 تلقائياً
-            else if (cleaned.length === 10 && cleaned.startsWith('1')) {
+            } else if (cleaned.length === 10 && cleaned.startsWith('1')) {
                 cleaned = '20' + cleaned;
             }
-            
             return cleaned;
         }
 

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أهل كار | حجز السيارات الفاخرة</title>
+    <!-- استيراد خط أنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- مكتبة Firebase لإدارة قاعدة البيانات -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 10%, #1a2238 0%, #0b0f19 70%);
+        }
+        .container {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 600px;
+            padding: 35px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #d4af37;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #d4af37;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+            color: #0b0f19;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .alert {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            color: #34d399;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>أَهْل كَار</h1>
+            <p>معرض السيارات الفاخرة - يرجى تسجيل البيانات أدناه</p>
+        </div>
+
+        <form id="carForm">
+            <div class="form-group">
+                <label for="clientName">الاسم الكامل</label>
+                <input type="text" id="clientName" required placeholder="أدخل اسمك الكريم">
+            </div>
+
+            <div class="form-group">
+                <label for="clientPhone">رقم الجوال (واتساب)</label>
+                <input type="tel" id="clientPhone" required placeholder="05xxxxxxxx">
+            </div>
+
+            <div class="form-group">
+                <label for="carModel">السيارة المطلوبة / الفئة</label>
+                <select id="carModel" required>
+                    <option value="" disabled selected>اختر فئة السيارة</option>
+                    <option value="Mercedes S-Class">مرسيدس الفئة S</option>
+                    <option value="BMW 7 Series">بي إم دبليو الفئة السابعة</option>
+                    <option value="Range Rover Autobiography">رنج روفر أتوبيوغرافيا</option>
+                    <option value="Porsche Cayenne">بورش كايين</option>
+                    <option value="Other Luxury Car">أخرى (يتم تحديدها بالملاحظات)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">ملاحظات إضافية أو طلبات خاصة</label>
+                <textarea id="notes" rows="3" placeholder="اللون المفضل، طريقة الدفع، أو أي تفاصيل أخرى..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">إرسال الطلب</button>
+        </form>
+
+        <div id="successAlert" class="alert alert-success">
+            تم إرسال طلبك بنجاح! رقم طلبك هو: <span id="displayOrderNum" style="font-weight:bold;"></span>. سنقوم بالتواصل معك قريباً.
+        </div>
+    </div>
+
+    <script>
+        // إعدادات ربط Firebase (تأكد من مطابقتها لمشروعك)
+        const firebaseConfig = {
+            databaseURL: "https://ahl-car-default-rtdb.firebaseio.com/" // استبدل الرابط برابط مشروعك الفعلي إذا لزم
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        document.getElementById('carForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "جاري إرسال الطلب...";
+
+            const name = document.getElementById('clientName').value;
+            const phone = document.getElementById('clientPhone').value;
+            const car = document.getElementById('carModel').value;
+            const notes = document.getElementById('notes').value;
+            
+            // توليد رقم طلب فريد بناءً على الوقت الحالي
+            const orderNumber = "AC-" + Math.floor(100000 + Math.random() * 900000);
+            const timestamp = new Date().toLocaleString('ar-SA');
+
+            const orderData = {
+                orderId: orderNumber,
+                name: name,
+                phone: phone,
+                car: car,
+                notes: notes,
+                status: "New", // الحالة الافتراضية للطلب جديد
+                date: timestamp
+            };
+
+            database.ref('orders/' + orderNumber).set(orderData)
+                .then(() => {
+                    document.getElementById('carForm').style.display = 'none';
+                    const alertBox = document.getElementById('successAlert');
+                    document.getElementById('displayOrderNum').innerText = orderNumber;
+                    alertBox.style.display = 'block';
+                })
+                .catch((error) => {
+                    alert("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.");
+                    btn.disabled = false;
+                    btn.innerText = "إرسال الطلب";
+                });
+        });
+    </script>
+</body>
+</html>

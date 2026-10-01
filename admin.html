@@ -312,6 +312,31 @@
             document.getElementById('adminPanel').style.display = 'block';
         }
 
+        // دالة تنظيف وتنسيق رقم الواتساب لأي دولة (تزيل الرموز والمسافات وتضبط المفتاح الدولي)
+        function cleanWhatsAppNumber(phone) {
+            if (!phone) return '';
+            // الاحتفاظ بالأرقام فقط
+            let cleaned = phone.replace(/\D/g, '');
+            
+            // إذا كان الرقم يبدأ بـ 0 (مثل 05 في السعودية أو 01 في مصر)، نتخلص من الصفر المحلي الأول إذا لزم أو نتركه حسب النظام، 
+            // لكن الروابط الدولية تعمل بكفاءة عند إزالة الصفر المحلي إذا أضيف مفتاح الدولة، 
+            // ولضمان عمله مع أرقام السعودية (يبدأ بـ 5) أو مصر (يبدأ بـ 1) مباشرة:
+            if (cleaned.startsWith('0')) {
+                cleaned = cleaned.substring(1);
+            }
+            
+            // إذا كان رقم سعودي يبدأ بـ 5 وطوله 9 أرقام، نضيف مفتاح الدولة 966 تلقائياً
+            if (cleaned.length === 9 && cleaned.startsWith('5')) {
+                cleaned = '966' + cleaned;
+            }
+            // إذا كان رقم مصري يبدأ بـ 1 وطوله 10 أرقام، نضيف مفتاح الدولة 20 تلقائياً
+            else if (cleaned.length === 10 && cleaned.startsWith('1')) {
+                cleaned = '20' + cleaned;
+            }
+            
+            return cleaned;
+        }
+
         // إعدادات Firebase الدائمة
         const firebaseConfig = {
             apiKey: "AIzaSyCe4nQE1-wtPPsr7AaC4bSRuSij8_bG6yQ",
@@ -335,7 +360,6 @@
         function setFilter(filterType) {
             currentFilter = filterType;
             
-            // تحديث الأزرار النشطة
             document.querySelectorAll('.stat-btn, .filter-btn').forEach(btn => btn.classList.remove('active'));
             if(filterType === 'all') {
                 document.getElementById('statAll').classList.add('active');
@@ -356,7 +380,6 @@
             renderOrders();
         }
 
-        // استماع للتحديثات
         database.ref('orders').on('value', (snapshot) => {
             allOrdersData = snapshot.val() || {};
             updateCounts();
@@ -384,7 +407,7 @@
             container.innerHTML = '';
             const searchText = document.getElementById('searchInput').value.toLowerCase();
 
-            const keys = Object.keys(allOrdersData).reverse(); // أحدث الطلبات أولاً
+            const keys = Object.keys(allOrdersData).reverse();
 
             if (keys.length === 0) {
                 container.innerHTML = '<div class="no-orders">لا توجد طلبات حتى الآن.</div>';
@@ -395,10 +418,8 @@
                 const order = allOrdersData[key];
                 const status = order.status || 'New';
 
-                // فلتر الأقسام
                 if(currentFilter !== 'all' && status !== currentFilter) return false;
 
-                // فلتر البحث السريع
                 if(searchText) {
                     const matchText = `${order.orderId || key} ${order.name} ${order.phone} ${order.car} ${order.city}`.toLowerCase();
                     if(!matchText.includes(searchText)) return false;
@@ -414,6 +435,7 @@
             filteredKeys.forEach((key) => {
                 const order = allOrdersData[key];
                 const status = order.status || 'New';
+                const formattedPhone = cleanWhatsAppNumber(order.phone);
 
                 const card = document.createElement('div');
                 card.className = 'order-card';
@@ -430,7 +452,7 @@
                         <p><span>السيارة:</span> <span>${order.car}</span></p>
                     </div>
                     <div class="card-actions">
-                        <a href="https://wa.me/${order.phone}" target="_blank" class="action-btn btn-whatsapp">واتساب العميل</a>
+                        <a href="https://wa.me/${formattedPhone}" target="_blank" class="action-btn btn-whatsapp">واتساب العميل</a>
                         <a href="https://wa.me/?text=${encodeURIComponent('تفاصيل طلب معرض أهل كار:\nرقم الطلب: ' + (order.orderId || key) + '\nالاسم: ' + order.name + '\nالجوال: ' + order.phone + '\nالمدينة: ' + (order.city || '') + '\nالسيارة: ' + order.car + '\nطريقة الدفع: ' + (order.payType || ''))}" target="_blank" class="action-btn btn-forward">تحويل لشخص آخر</a>
                         <button class="action-btn btn-save" onclick="saveAsTxt('${key}')">حفظ باللوحة .txt</button>
                         <button class="action-btn btn-contacted" onclick="updateStatus('${key}', 'تم التواصل')">تم التواصل</button>
@@ -446,15 +468,10 @@
             renderOrders();
         }
 
-        // تحديث حالة الطلب (تم التواصل، أرشيف، محفوظات)
         function updateStatus(key, newStatus) {
-            database.ref('orders/' + key).update({ status: newStatus })
-                .then(() => {
-                    // التحديث تلقائي
-                });
+            database.ref('orders/' + key).update({ status: newStatus });
         }
 
-        // حفظ الطلب كملف نصي وتحويل حالته إلى المحفوظات
         function saveAsTxt(key) {
             const order = allOrdersData[key];
             const content = `--- تفاصيل طلب معرض أهل كار ---\nرقم الطلب: ${order.orderId || key}\nالتاريخ: ${order.date}\nنوع العميل: ${order.clientType}\nطريقة الدفع: ${order.payType}\nاسم العميل: ${order.name}\nالجوال: ${order.phone}\nالمدينة: ${order.city}\nالسيارة المطلوبة: ${order.car}`;
@@ -465,11 +482,9 @@
             link.download = `Order_${order.orderId || key}.txt`;
             link.click();
 
-            // حفظ الحالة تلقائياً إلى المحفوظات
             updateStatus(key, 'المحفوظات');
         }
 
-        // حذف الطلب
         function deleteOrder(key) {
             if (confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
                 database.ref('orders/' + key).remove();

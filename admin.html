@@ -186,7 +186,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             position: relative;
         }
-        .badge-new {
+        .badge-order-id {
             position: absolute;
             top: 15px;
             left: 15px;
@@ -211,6 +211,20 @@
         .order-info p span {
             color: #f3f4f6;
             font-weight: 600;
+        }
+        /* حالة الطلب في المنتصف */
+        .status-center-box {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+        }
+        .status-center-box span {
+            color: #d4af37;
+            font-weight: 700;
+            font-size: 14px;
         }
         /* أزرار الإجراءات داخل الكارت */
         .card-actions {
@@ -433,14 +447,18 @@
             filteredKeys.forEach((key) => {
                 const order = allOrdersData[key];
                 const status = order.status || 'New';
+                const orderIdDisplay = order.orderId || key;
                 const formattedPhone = cleanWhatsAppNumber(order.phone);
 
                 const card = document.createElement('div');
                 card.className = 'order-card';
                 card.innerHTML = `
-                    <div class="badge-new">${status}</div>
+                    <div class="badge-order-id">${orderIdDisplay}</div>
+                    <div class="status-center-box">
+                        <span>حالة الطلب: ${status}</span>
+                    </div>
                     <div class="order-info">
-                        <p><span>رقم الطلب:</span> <span>${order.orderId || key}</span></p>
+                        <p><span>رقم الطلب:</span> <span>${orderIdDisplay}</span></p>
                         <p><span>التاريخ والوقت:</span> <span>${order.date || 'غير محدد'}</span></p>
                         <p><span>نوع العميل:</span> <span>${order.clientType || 'أفراد'}</span></p>
                         <p><span>طريقة الدفع:</span> <span>${order.payType || 'كاش'}</span></p>
@@ -451,7 +469,7 @@
                     </div>
                     <div class="card-actions">
                         <a href="https://wa.me/${formattedPhone}" target="_blank" class="action-btn btn-whatsapp">واتساب العميل</a>
-                        <a href="https://wa.me/?text=${encodeURIComponent('تفاصيل طلب معرض أهل كار:\nرقم الطلب: ' + (order.orderId || key) + '\nالاسم: ' + order.name + '\nالجوال: ' + order.phone + '\nالمدينة: ' + (order.city || '') + '\nالسيارة: ' + order.car + '\nطريقة الدفع: ' + (order.payType || ''))}" target="_blank" class="action-btn btn-forward">تحويل لشخص آخر</a>
+                        <a href="https://wa.me/?text=${encodeURIComponent('تفاصيل طلب معرض أهل كار:\nرقم الطلب: ' + orderIdDisplay + '\nالحالة: ' + status + '\nالاسم: ' + order.name + '\nالجوال: ' + order.phone + '\nالمدينة: ' + (order.city || '') + '\nالسيارة: ' + order.car + '\nطريقة الدفع: ' + (order.payType || ''))}" target="_blank" class="action-btn btn-forward">تحويل لشخص آخر</a>
                         <button class="action-btn btn-save" onclick="saveAsTxt('${key}')">حفظ باللوحة .txt</button>
                         <button class="action-btn btn-contacted" onclick="updateStatus('${key}', 'تم التواصل')">تم التواصل</button>
                         <button class="action-btn btn-archive" onclick="updateStatus('${key}', 'الأرشيف')">أرشفة</button>
@@ -472,12 +490,13 @@
 
         function saveAsTxt(key) {
             const order = allOrdersData[key];
-            const content = `--- تفاصيل طلب معرض أهل كار ---\nرقم الطلب: ${order.orderId || key}\nالتاريخ: ${order.date}\nنوع العميل: ${order.clientType}\nطريقة الدفع: ${order.payType}\nاسم العميل: ${order.name}\nالجوال: ${order.phone}\nالمدينة: ${order.city}\nالسيارة المطلوبة: ${order.car}`;
+            const orderIdDisplay = order.orderId || key;
+            const content = `--- تفاصيل طلب معرض أهل كار ---\nرقم الطلب: ${orderIdDisplay}\nالحالة: ${order.status || 'New'}\nالتاريخ: ${order.date}\nنوع العميل: ${order.clientType}\nطريقة الدفع: ${order.payType}\nاسم العميل: ${order.name}\nالجوال: ${order.phone}\nالمدينة: ${order.city}\nالسيارة المطلوبة: ${order.car}`;
             
             const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Order_${order.orderId || key}.txt`;
+            link.download = `Order_${orderIdDisplay}.txt`;
             link.click();
 
             updateStatus(key, 'المحفوظات');
